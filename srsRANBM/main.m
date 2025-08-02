@@ -58,8 +58,8 @@ delayProfile = 'CDL-A';
 delaySpread = 100e-9;
 % Doppler Shift
 DopplerSchedule = [17.5 20.5 25];
-currentDopplerIdx=1;
-maximumDopplerShift=DopplerSchedule(currentDopplerIdx);
+currentDopplerIdx = 1;
+maximumDopplerShift = DopplerSchedule(currentDopplerIdx);
 
 channels = hMultiUserChannels(delayProfile,delaySpread,maximumDopplerShift,bsAntSize,ueAntSizes,groups);
 [numRF,channels,alg] = setupJSDM(alg,groups,numUEs,channels,bsAntSize);
@@ -72,6 +72,16 @@ diagnosticsOn = true;
 
 % For each slot
 for nSlot = 0:(carrier.SlotsPerFrame*numFrames)-1
+    if nSlot == idx
+        % Reconfigure channels with the new Doppler shift for the upcoming downlink
+        channels = hMultiUserChannels(delayProfile,delaySpread,maximumDopplerShift,bsAntSize,ueAntSizes,groups);
+        disp(['Slot ' num2str(nSlot) ': Doppler shift updated to ' num2str(maximumDopplerShift) ' Hz. Channels have been reconfigured.']);
+        
+        % Update Doppler shift by cycling through the schedule
+        currentDopplerIdx = mod(currentDopplerIdx, numel(DopplerSchedule)) + 1;
+        maximumDopplerShift = DopplerSchedule(currentDopplerIdx);
+        idx = idx + numel(tddPattern);
+    end
     
 
     % Update the slot number
