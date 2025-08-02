@@ -6,11 +6,11 @@ SNRdBDL = 23;       % Downlink SNR in dB
 SNRdBUL = 18;       % Uplink SNR in dB
 
 carrier = nrCarrierConfig;
-carrier.NSizeGrid = 64;
+carrier.NSizeGrid = 64;  
 carrier.SubcarrierSpacing = 30;
 
 tddPattern = ["D","D","D","D","D","D","D","S","U","U"]; 
-
+idx = getFirstToAppear(tddPattern, "S", "U");
 
 disp("Cyclic slot pattern:")
 
@@ -56,7 +56,11 @@ alg.PerfectChannelEstimator = false;
 
 delayProfile = 'CDL-A';
 delaySpread = 100e-9;
-maximumDopplerShift = 50;
+% Doppler Shift
+DopplerSchedule = [17.5 20.5 25];
+currentDopplerIdx=1;
+maximumDopplerShift=DopplerSchedule(currentDopplerIdx);
+
 channels = hMultiUserChannels(delayProfile,delaySpread,maximumDopplerShift,bsAntSize,ueAntSizes,groups);
 [numRF,channels,alg] = setupJSDM(alg,groups,numUEs,channels,bsAntSize);
 
@@ -68,9 +72,10 @@ diagnosticsOn = true;
 
 % For each slot
 for nSlot = 0:(carrier.SlotsPerFrame*numFrames)-1
+    
 
     % Update the slot number
-    carrier.NSlot = nSlot;
+    carrier.NSlot = nSlot;  %here we do indexing of tdd pattern or for particular slot which tdd
 
     % Display slot number and type (if diagnostics are enabled)
     if (diagnosticsOn)
